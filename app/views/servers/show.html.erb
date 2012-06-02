@@ -1,0 +1,29 @@
+<h1>Hefaistus <%= @version %></h1> 
+
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Nome:</b>
+  <%= @server.name %>
+</p>
+
+<p>
+  <b>Endereço de IP:</b>
+  <%= @server.ip %>
+</p>
+
+<p>
+  <b>Porta SSH:</b>
+  <%= @server.ssh_port %>
+</p>
+
+<p>
+  <b>Load Average:</b>
+  <%= @server.load_average %>
+</p>
+
+
+<%= link_to 'Editar', edit_server_path(@server) %> |
+<%= link_to 'Voltar', servers_path %>
+
+<hr>
