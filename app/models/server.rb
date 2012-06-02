@@ -6,10 +6,10 @@ class Server < ActiveRecord::Base
 
   def load_average
 	host = self.ip
-	user = 'targino'
-	password = 'stargino'
+	user = 'hephaestus'
+	password = 'hepahestus'
     Net::SSH.start( host, user, :password => password ) do |ssh|
-		result = ssh.exec!('w | grep "load average" | cut -d: -f4')
+		result = ssh.exec!('w | grep "load average" | cut -d: -f5')
 		@result = result
     end
     @result
