@@ -7,9 +7,9 @@ class Server < ActiveRecord::Base
   def load_average
 	host = self.ip
 	user = 'hephaestus'
-	password = 'hepahestus'
+	password = 'hephaestus'
     Net::SSH.start( host, user, :password => password ) do |ssh|
-		result = ssh.exec!('w | grep "load average" | cut -d: -f5')
+		result = ssh.exec!("uptime | awk -F 'load average:' '{ print $2 }'")
 		@result = result
     end
     @result
