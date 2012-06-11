@@ -1,6 +1,178 @@
-== Welcome to Hefaitus
+Surgimento do Hephaestus
 
-=== What's Hefaistus ?
+A idéia do Hephaestus surgiu da necessidade de ter que controlar uma grande
+quantidade de servidores Linux através de pessoas sem muito conhecimento
+de como fazẽ-lo através de uma interface de prompt de comando (shell), foi então
+que nasceu a idéia de desenvolvimento do Hepahestus.
 
-=== 
+Origem do nome do Hephaestus
+
+O nome Hephaestus vem da mitologia Grega, Hephaestus era o deus das ferramentas,
+deus do fogo e do ferro, filho de zeus com era nasceu manco e foi espulso do Olimpu,
+e como a idéia do sistema era controlar várias ferramentos de gerenciamento do sistema
+operacional e das aplicações nasceu o Hephaestus em alusão ao deus das ferramentas. 
+
+
+Hephaestus
+
+O Hephaestus é um sistema desenvolvido para gerenciar servidores Linux, 
+com ele é possível controlar e gereneciar servidores remotamente através 
+de uma interface WEB, onde não é necessário o conhecimento de comando 
+e técnicas de administração de servidores.
+
+Liguagem de programação
+
+Hephaestus foi desenvolvido em Ruby 1.9.2, usando o Rails Framework 3.x para 
+a construção da aplicações e camada de visualização, também foi usada a  
+biblioteca net/ssh responsavel pela conexão com os servidores remotos para 
+a execução dos comandos.
+
+A aplicação WEB é servida através do servidor http mongrel que é instalado junto
+com o Rails Framework em forma de biblioteca.
+
+Banco de dados
+
+O banco de dados utiliziado no desenvolvimento foi PostgreSQL 9.1, que pode ser 
+executado tanto em localhost como em servidores remotos trazendo assim o conceito 
+de distribuição, não foi implementado um cluster da banco de dados para este teste.
+
+Loadbalancing da aplicação
+
+A alta disponibilidade da aplicação foi contruida com a tecnica de loadbalancing
+através do apache webserver, onde são executas através do servidor HTTP N instancias 
+do Hephaestus em N máquinas dentro da mesma rede ou em redes separadas, e no Apache 
+WEB Server é criado um virtual host especificamente para balancear o fluxo de reuisições 
+para as instancias disponiveis naquele momento, gerando ao usuário a sensação de estar 
+acessando uma unica aplicação quando que por trás temos N aplicações garantido a alta
+disponibilidade do sistema.
+
+Trecho do arquivo de configuração do virtual host de loadbalancing
+
+<VirtualHost 127.0.1.1:80>
+  ServerName hephaestus
+  DocumentRoot /home/targino/Desenvolvimento/rails/hephaestus/hephaestus/public/
+
+  <Directory /home/targino/Desenvolvimento/rails/hephaestus/hephaestus/public/>
+    AllowOverride FileInfo Indexes
+  </Directory>
+
+  RewriteEngine On
+
+  # Redirect all non-static requests to Mongrel
+  RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-f
+  RewriteRule ^/(.*)$ balancer://hephaestus%{REQUEST_URI} [P,QSA,L]
+
+  ProxyPassReverse / balancer://hephaestus
+  ProxyPreserveHost on
+
+  <Proxy balancer://hephaestus>
+    BalancerMember http://localhost:8000
+    BalancerMember http://localhost:8001
+    BalancerMember http://localhost:8002
+    BalancerMember http://localhost:8003
+    BalancerMember http://localhost:8004
+  </Proxy>
+
+  <Proxy *>
+    Order deny,allow
+    Allow from all
+  </Proxy>
+
+</VirtualHost>
+
+
+Ambiente de testes do Hephaestus
+
+Uma máquina fisica:
+
+DELL Inspiron 
+4Gb RAM
+Dual Core 2x2.3Ghz
+250Gb HD
+Ubuntu 12.04
+
+
+Uma máquina virtual
+
+1Gb RAM
+1 Core 1.0Ghz
+2Gb HD
+Debian Squeeze
+
+
+
+Funcionalidades do sistema:
+
+1 - Cadastro de Servidores (Gerenciamento dos servidores)
+1.1 - Novo Servidor (Metodo responsavel por cadastrar novos servidores)
+1.2 - Editar (Metodo responsavel por editar servidores já existentes)
+1.3 - Excluir (Metodo responsal por excluir servidores já existentes)
+1.4 - Dados do Servidor (Metodo responsavel por exibir status do servidor naquele momento)
+1.5 - Instalar HTOP (Metodo reponsavel por demonstrar a instalação de novos pacotes.)
+1.6 - Remover HTOP (Metodo responsavel por demonstrar a remoção de pacotes previamente instalados)
+1.7 - Matar TOP (Metodo responsavel por demonstrar a parada de um processo.)
+1.8 - Desligar (Metodo responsavel por executar o comando de desligar o servidor)
+1.9 - Reiniciar (Metodo responsavel por executar o comando que reinicia o servidor)
+
+
+
+Trechos de códigos
+
+
+  # Trecho de código responsavel pelo desligamento dos servidores
+  def shutdown
+    @server = Server.find(params[:id])
+    host = @server.ip
+    user = 'hephaestus'
+    password = 'hephaestus'
+    Net::SSH.start( host, user, :password => password ) do |ssh|
+      result = ssh.exec!("echo 'Eu desliguei o seu computador.....!!!!' > ~/arquivo.txt; sudo halt &")
+      @result = result
+    end
+    #@result
+    redirect_to servers_url, notice: 'O servidor foi atualizado.'
+  end
+
+
+  # Trecho de código para parada de processo.
+  def killtop
+    @server = Server.find(params[:id])
+    host = @server.ip
+    user = 'hephaestus'
+    password = 'hephaestus'
+    Net::SSH.start( host, user, :password => password ) do |ssh|
+      result = ssh.exec!("sudo killall top; echo 'Eu matei o top.... kkkkkk....' > ~/arquivo.txt")
+      @result = result
+    end
+    #@result
+    redirect_to servers_url, notice: 'Processo finalizado com sucesso.'
+  end
+
+  # Trecho de código para instalação de novos pacotes
+  def installhtop
+    @server = Server.find(params[:id])
+    host = @server.ip
+    user = 'hephaestus'
+    password = 'hephaestus'
+    Net::SSH.start( host, user, :password => password ) do |ssh|
+      result = ssh.exec!("sudo apt-get install htop --yes")
+      @result = result
+    end
+    #@result
+    redirect_to servers_url, notice: 'HTOP Instalado com sucesso.'
+  end
+
+
+Fluxo de gerenciamento de servidores via Hephaestus
+
+O usuário acesso o sistema via requisição HTTP
+Entra no cadastro de servidores
+Excuta o metodo referente a operação a ser realizada para determinado servidor
+O sistema se conecta via SSH com o servidor remoto 
+Após conectado ao servidor remoto o sistema executas os comandos relativos ao metodo invocado
+Após a execução do metodo o sistema volta para a tela de servidores e apresenta uma mensagem referente a execuçaõ do metodo.
+
+
+
+
 
