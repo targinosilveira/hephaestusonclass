@@ -1,0 +1,10 @@
+--- 
+servers: 5
+address: 127.0.0.1
+cwd: /home/targino/Desenvolvimento/rails/hephaestus/hephaestus/
+environment: development
+user: targino
+port: "8000"
+log_file: log/mongrel.log
+group: targino
+pid_file: tmp/pids/mongrel.pid

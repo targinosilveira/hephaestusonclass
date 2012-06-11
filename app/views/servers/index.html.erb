@@ -18,6 +18,11 @@
     <td><%= server.ip %></td>
     <td><%= server.ssh_port %></td>
     <td><%= link_to 'Dados do servidor', server %></td>
+    <td><%= link_to "Instalar HTOP", :controller => "servers", :action => "installhtop", :id => server %>
+    <td><%= link_to "Remover HTOP", :controller => "servers", :action => "removehtop", :id => server %>
+    <td><%= link_to "Matar TOP", :controller => "servers", :action => "killtop", :id => server %>
+    <td><%= link_to "Desligar", :controller => "servers", :action => "shutdown", :id => server %>
+    <td><%= link_to "Reiniciar", :controller => "servers", :action => "reboot", :id => server %>
     <td><%= link_to 'Editar', edit_server_path(server) %></td>
     <td><%= link_to 'Excluir', server, confirm: 'Tem certeza que deseja excluir?', method: :delete %></td>
   </tr>
@@ -29,3 +34,4 @@
 <%= link_to 'Novo Servidor', new_server_path %>
 
 <hr>
+

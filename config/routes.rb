@@ -1,7 +1,15 @@
 Hephaestus::Application.routes.draw do
 
 
-  resources :servers
+  resources :servers do
+    collection do
+      get "shutdown"
+      get "killtop"
+      get "installhtop"
+      get "removehtop"
+      get "reboot"
+    end
+  end
 
   get "home/index"
 
